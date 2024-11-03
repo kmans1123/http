@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta name="naver-site-verification" content=""/><!-- 네이버 소유확인 -->
+    <meta name="description" content=""><!-- 사이트 설명문구 -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Sample">
+    <meta property="og:description" content=""><!-- 사이트 설명문구 -->
+    <meta property="og:image" content="img/common/logo.png">
+    <meta property="og:url" content="">
+	<title>Sample</title>
+    <script src="js/jquery-ui.js"></script>
+    <script src="js/jquery-1.8.3.min.js"></script>
+    <script src="js/jquery.easing.min.js"></script>
+    <script src="js/topmenu_script.js"></script>
+    <script src="js/swiper.min.js"></script>
+    <link rel="stylesheet" href="css/swiper.min.css">
+    <link rel="stylesheet" href="css/sh_common.css">
+    <link rel="stylesheet" href="css/sh_main.css">
+</head>
+<body>
+
+<!-- sh_wrapper [s] -->
+<div id="sh_wrapper">
+    <!-- sh_hd [s] -->
+    <div id="sh_hd">
+        <div class="top_nav_bg"></div>
+    	<div id="sh_hd_wrapper">
+            <!-- sh_nav_wrap [s] -->
+            <div id="sh_nav_wrap">	
+                <h1 id="sh_top_logo"><a href="index.html"><img src="img/common/logo.png" alt="Sample" /></a></h1>
+                <!-- sh_nav [s] -->
+                <ul id="sh_nav">
+                    <li class="menu-item active">
+                        <a href="sub1.html">회사소개</a>
+                        <ul class="sh_nav_s">
+                            <li><a href="sub1.html">회사소개</a></li>
+                            <li><a href="">소메뉴</a></li>
+                            <li><a href="">소메뉴</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu-item">
+                        <a href="">사업안내</a>
+                        <ul class="sh_nav_s">
+                            <li><a href="">소메뉴</a></li>
+                            <li><a href="">소메뉴</a></li>
+                            <li><a href="">소메뉴</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu-item">
+                        <a href="">서비스 분야</a>
+                        <ul class="sh_nav_s">
+                            <li><a href="">소메뉴</a></li>
+                            <li><a href="">소메뉴</a></li>
+                            <li><a href="">소메뉴</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu-item">
+                        <a href="">마케팅 최적화</a>
+                        <ul class="sh_nav_s">
+                            <li><a href="">소메뉴</a></li>
+                            <li><a href="">소메뉴</a></li>
+                            <li><a href="">소메뉴</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu-item">
+                        <a href="">고객센터</a>
+                        <ul class="sh_nav_s">
+                            <li><a href="">소메뉴</a></li>
+                            <li><a href="">소메뉴</a></li>
+                            <li><a href="">소메뉴</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div id="menuLine"></div>
+                <!-- sh_nav [e] -->
+                
+                <!-- pfWrap [s] -->
+                <div id="pfBtn">
+                    <img src="img/common/btn.png" alt="전체메뉴 버튼" />
+                </div>
+                <div id="pfWrap">
+                    <div class="pf_cate">
+                        <ul>
+                            <li><a href="sub1.html"><span class="nav_num">01</span>회사소개</a></li>
+                            <li><a href=""><span class="nav_num">02</span>사업안내</a></li>
+                            <li><a href=""><span class="nav_num">03</span>서비스 분야</a></li>
+                            <li><a href=""><span class="nav_num">04</span>마케팅 최적화</a></li>
+                            <li><a href=""><span class="nav_num">05</span>고객센터</a></li>
+                        </ul>
+                        <a class="ct_link" href=''>Contact Us</a>
+                    </div>
+                </div>
+                <!-- pfWrap [e] -->
+            </div>
+            <!-- sh_nav_wrap [e] -->            
+		</div>            
+    </div>
+    <!-- sh_hd [e] -->
+
+    <!-- sh_container [s] -->
+    <div id="sh_container">
+        <!-- sh_container_wrapper [s] -->
+        <div id="sh_container_wrapper">
+            <!-- sh_main_banner [s] -->
+            <div id="sh_main_banner">
+                <div class="swiper-container sh_main_swiper">
+                    <ul class="sh_main_img swiper-wrapper">
+                        <li class="box1 swiper-slide"></li>
+                        <li class="box2 swiper-slide"></li>
+                        <li class="box3 swiper-slide"></li>
+                    </ul>
+                </div>
+
+                <div class="sh_txt_box">
+                    <p class="move_txt01">사설렉카 강력 <b>Team</b></p>
+                    <p class="move_txt02">그 누구보다 빠르게 사고 현장에 달려가며,
+                    대량의 금액을 청구하여 돈을 뜯어먹습니다. 옴뇸뇸</p>
+                    <div class="swiper-pager"></div>
+                    <p class="scroll">Scroll Down</p>
+                </div>    
+
+                <script>
+                $(document).ready(function(){
+                    $('.sh_txt_box .move_txt01').delay(200).animate({"margin-top":"0","opacity":"1"},600);
+                    $('.sh_txt_box .move_txt02').delay(600).animate({"opacity":"1"},600);
+                    $('.sh_txt_box .swiper-pager').delay(600).animate({"opacity":"1"},600);
+                    $('.sh_txt_box .scroll').delay(1000).animate({"opacity":"1"},600);
+                });
+                var swiper = new Swiper(".sh_main_swiper", {
+                    effect: "fade",
+                    loop: true,
+                    speed: 1000,
+                    autoplay: {
+                      delay: 3500,
+                      disableOnInteraction: false,
+                    },
+                    pagination: {
+                      el: ".swiper-pager",
+                      bulletActiveClass: 'on',
+                      clickable: true,
+                    },
+                });
+                </script>
+            </div>
+            <!-- sh_main_banner [e] -->
+            
+            <!-- sh_section [s] -->
+            <div id="sh_section">
+                <!-- atc01 [s] -->
+                <div id="atc01">
+                    <div class="inner1"></div>
+                    <div class="inner2">
+                        <p class="tit">Best<br><b>Playlist</b></p>
+                        <p class="txt">강력팀은 모두가 과속하고 난폭하게  다니는 세상을 추구합니다.<br>
+                           과속을 하고, 전손을 내고, 서로의 꿈을 응원하는 사람들이 많아질수록 세상은<br>
+                           더 행복하고 풍요로워질 것입니다.</p>
+                        <div class="more"><a href="">MORE VIEW</a></div>
+                        <a class="btn" href="">WHAT WE DO</a>
+                    </div> 
+                </div>
+                <!-- atc01 [e] -->
+                
+                <!-- atc02 [s] -->
+                <div id="atc02">
+                    <ul>
+                        <li><a href="">
+                            <p class="img"></p>
+                            <p class="txt"><span>CREATIVE</span><br>창의적인 운전으로 늘<br>그 이상의 가치를 호객에게 제공</p>
+                        </a></li>
+                        <li><a href="">
+                            <p class="img"></p>
+                            <p class="txt"><span>INQUIRY</span><br>가치를 창출하는 인재양성<br>언제나 폭력적인 운전자를 생성</p>
+                        </a></li>
+                        <li><a href="">
+                            <p class="img"></p>
+                            <p class="txt"><span>PARTNER</span><br>전통 보험사 렉카와 다르게 <br>언제나 준비되어 있는 짜세</p>
+                        </a></li>
+                        <li><a href="">
+                            <p class="img"></p>
+                            <p class="txt"><span>BUSINESS</span><br>빠르고 신속한 전국 다이렉트 <br>서비스망으로 견인 분야 대한 최고의 팀</p>
+                        </a></li>
+                    </ul>
+                </div>
+                <!-- atc02 [e] -->
+                
+                <!-- atc03 [s] -->
+                <div id="atc03">
+                  <div class="index01">
+                    <a class="tit" href=''>NOTICE<span></span></a>
+                    <ul class="sh_lt2">
+                        <li>
+                            <div class="sh_date">
+                                <span class="day">30</span><br/>
+                                <span class="day_02">2020.01</span>
+                            </div>    
+                            <div class="txt_wrap">
+                                <span class="sh_notice">공지사항을 알려드립니다.</span><br/>
+                                <span class="sh_contents">양질의 서비스와 발전하는 기업이 되기위해 새로이 홈페이지를 오픈 하였습니다...</span>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="sh_date">
+                                <span class="day">30</span><br/>
+                                <span class="day_02">2020.01</span>
+                            </div>    
+                            <div class="txt_wrap">
+                                <span class="sh_notice">공지사항을 알려드립니다.</span><br/>
+                                <span class="sh_contents">양질의 서비스와 발전하는 기업이 되기위해 새로이 홈페이지를 오픈 하였습니다...</span>
+                            </div>
+                        </li>
+                    </ul>
+                  </div>
+                  <div class="index02">
+                    <a class="tit" href=''>NEWS<span></span></a>
+                    <ul class="sh_lt2">
+                        <li>
+                            <div class="sh_date">
+                                <span class="day">30</span><br/>
+                                <span class="day_02">2020.01</span>
+                            </div>    
+                            <div class="txt_wrap">
+                                <span class="sh_notice">공지사항을 알려드립니다.</span><br/>
+                                <span class="sh_contents">양질의 서비스와 발전하는 기업이 되기위해 새로이 홈페이지를 오픈 하였습니다...</span>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="sh_date">
+                                <span class="day">30</span><br/>
+                                <span class="day_02">2020.01</span>
+                            </div>    
+                            <div class="txt_wrap">
+                                <span class="sh_notice">공지사항을 알려드립니다.</span><br/>
+                                <span class="sh_contents">양질의 서비스와 발전하는 기업이 되기위해 새로이 홈페이지를 오픈 하였습니다...</span>
+                            </div>
+                        </li>
+                    </ul>
+                  </div> 
+                </div>
+                <!-- atc03 [e] -->
+                
+                <!-- atc04 [s] -->
+                <div id="atc04">
+                    <p class="tit"> Contacts</p>
+                    <p class="txt">문의를 남겨주시면 신속하게 상담해드리겠습니다.</p>
+                    <div class="more"><a href="">MORE VIEW</a></div>
+                </div>
+                <!-- atc04 [e] -->
+            </div>
+            <!-- sh_section [e] -->
+        </div>
+        <!-- sh_container_wrapper [e] -->
+    </div>
+    <!-- sh_container [e] -->
+
+    <!-- sh_ft [s] -->
+    <div id="sh_ft">
+        <div class="info">
+            <span>Emergency services for cars, not people</span>
+            인천직영점 : 인천광역시 연수구 & 구미직영점 : 경북 구미시 산동읍<br />
+            사업자 번호 : 13-37-4638(등록2003년) 통신판매업종신고 : 제2010-평양직할시-924호 상호 : 대한연합 대표 : 최현준<br />
+            고객센터:1577-1577 팩스:220d-530i 이메일:없음시발아@naver.com
+        </div>
+        <div class="copy">
+            <div class="copy_wrap">
+                <span>ⓒ All rights reserved.</span>     
+            </div>        
+        </div>
+    </div>
+    <!-- sh_ft [e] -->
+</div>
+<!-- sh_wrapper [e] -->
+
+</body>
+</html>
+
