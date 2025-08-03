@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>KOREA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    rel="icon"
+    type="image/jpeg"
+    href="https://raw.githubusercontent.com/kmans1123/img/refs/heads/main/KakaoTalk_20250804_005639882.jpg"
+  />
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+
+      background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab, #8b5cf6, #ec4899);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #333;
+    }
+
+    @keyframes gradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    h1 {
+      color: #333;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+      margin-bottom: 40px;
+    }
+
+    .button-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 20px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .button {
+      padding: 15px 25px;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, #a3bffa, #d6e0ff);
+      user-select: none;
+      text-shadow: none;
+    }
+    .button:nth-child(2) {
+      background: linear-gradient(135deg, #ffd6e8, #ffe7f0);
+      color: #555;
+    }
+    .button:nth-child(3) {
+      background: linear-gradient(135deg, #b2f7ef, #d9fff8);
+      color: #555;
+    }
+    .button:nth-child(4) {
+      background: linear-gradient(135deg, #fff1c6, #fff8d1);
+      color: #555;
+    }
+    .button:nth-child(5) {
+      background: linear-gradient(135deg, #c1d7ff, #e1ecff);
+      color: #555;
+    }
+    .button:nth-child(6) {
+      background: linear-gradient(135deg, #d0f0c0, #e8f9d5);
+      color: #555;
+    }
+    .button:nth-child(7) {
+      background: linear-gradient(135deg, #ffd3c9, #ffe4df);
+      color: #555;
+    }
+
+    .button:nth-child(8) {
+        background: linear-gradient(135deg, #e6e6fa, #f0f8ff); /* 연한 라벤더-하늘색 계열 */
+       color: #555; /* 기존 버튼들과 통일 */
+    }
+
+
+    .button:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    }
+
+  </style>
+</head>
+<body>
+  <h1>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/Flag_of_South_Korea.svg" alt="태극기" style="width:32px; height:20px; vertical-align:middle; margin-right:8px;" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/Flag_of_South_Korea.svg" alt="태극기" style="width:32px; height:20px; vertical-align:middle; margin-right:8px;" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/Flag_of_South_Korea.svg" alt="태극기" style="width:32px; height:20px; vertical-align:middle; margin-right:8px;" />
+</h1>
+
+  <div class="button-container">
+    <button class="button" onclick="location.href='sort.html'">이름 가나다순 정렬</button>
+    <button class="button" onclick="location.href='percent.html'">퍼센트 계산기</button>
+    <button class="button" onclick="location.href='convert.html'">단위 변환 계산기</button>
+    <button class="button" onclick="location.href='dilution.html'">희석비 계산기</button>
+    <button class="button" onclick="location.href='time.html'">시간 계산기</button>
+    <button class="button" onclick="location.href='efficiency.html'">연비 계산기</button>
+    <button class="button" onclick="location.href='minigame.html'">미니게임</button>
+    <button class="button" onclick="location.href='https://xn--3464603-yv41a.kro.kr/'">346두4603</button>
+  </div>
+</body>
+</html>

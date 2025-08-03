@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KOREA - 연비 계산기</title>
+ <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/kmans1123/img/refs/heads/main/KakaoTalk_20250804_005639882.jpg" />
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    padding: 20px;
+    color: #333;
+  }
+  h2 {
+    color: #5a5a5a;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: 600;
+  }
+  input[type=number] {
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 1rem;
+  }
+  button {
+    margin-top: 20px;
+    background-color: #a3d2ca;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #fff;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+  }
+  button:hover {
+    background-color: #79b4a9;
+  }
+  .result {
+    margin-top: 25px;
+    font-size: 1.2rem;
+    color: #d9534f;
+    font-weight: bold;
+    white-space: pre-line;
+  }
+</style>
+</head>
+<body>
+
+<section id="fuel-section">
+  <h2>연비 계산기</h2>
+
+  <label for="distance">가고 싶은 거리 (km):</label>
+  <input type="number" id="distance" min="0" placeholder="예: 100" />
+
+  <label for="efficiency">연비 (km/L):</label>
+  <input type="number" id="efficiency" min="0" step="0.01" placeholder="예: 12.5" />
+
+  <label for="price">유가 (원/L):</label>
+  <input type="number" id="price" min="0" step="0.01" placeholder="예: 1600" />
+
+  <label for="fuel-cost">주유 금액 (원):</label>
+  <input type="number" id="fuel-cost" min="0" step="0.01" placeholder="예: 50000" />
+
+  <div>
+    <button id="fuel-calc-btn">계산하기</button>
+    <button id="go-back-btn">돌아가기</button>
+  </div>
+
+  <div class="result" id="fuel-result"></div>
+</section>
+
+<script src="efficiency.js"></script>
+</body>
+</html>

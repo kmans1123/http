@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>미니게임 - KOREA</title>
+  <link rel="icon" href="https://raw.githubusercontent.com/kmans1123/img/refs/heads/main/KakaoTalk_20250804_005639882.jpg" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    header img {
+      height: 40px;
+      margin-right: 12px;
+      border-radius: 8px;
+    }
+    h1 {
+      margin: 0;
+      font-weight: 600;
+      color: #5a5a5a;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 1rem;
+      background: #a1cfff;
+      color: #1a2b5d;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background: #81b5ff;
+    }
+    #backBtn {
+      background: #f79393;
+      color: white;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 100;
+    }
+    .hidden {
+      display: none;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 10px rgb(0 0 0 / 0.1);
+    }
+    h2 {
+      margin-top: 30px;
+      color: #444;
+      border-bottom: 2px solid #a1cfff;
+      padding-bottom: 5px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+      color: #555;
+    }
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 4px;
+      font-size: 1rem;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #5a9df9;
+    }
+    #result, #ladderResult, #drawResult, #diceResult {
+      margin-top: 15px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #d83535;
+      min-height: 30px;
+    }
+    canvas {
+      display: block;
+      margin: 20px auto;
+    }
+    /* 룰렛 이름 텍스트 스타일 */
+    .roulette-text {
+      font-weight: 700;
+      font-size: 14px;
+      fill: white;
+      text-shadow: 1px 1px 2px black;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://raw.githubusercontent.com/kmans1123/img/refs/heads/main/KakaoTalk_20250804_005639882.jpg" alt="KOREA 아이콘" />
+    <h1>미니게임 - KOREA</h1>
+  </header>
+
+<div class="container" id="mainMenu">
+  <button id="btnRoulette">룰렛</button>
+  <button id="btnDraw">제비뽑기</button>
+  <button id="btnLadder">사다리 타기</button>
+  <button id="btnDice">주사위 굴리기</button>
+  <hr />
+  <button id="goIndexBtn">메인 페이지로 이동</button>
+</div>
+
+  <!-- 룰렛 화면 -->
+  <div class="container hidden" id="rouletteSection">
+    <h2>룰렛</h2>
+    <label>구간 이름들 (쉼표로 구분, 예: 빨강,주황,노랑)</label>
+    <input type="text" id="rouletteNames" placeholder="예: 빨강,주황,노랑,초록" />
+    <button id="startRouletteBtn">룰렛 돌리기</button>
+    <canvas id="rouletteCanvas" width="400" height="400"></canvas>
+    <div id="result"></div>
+  </div>
+
+  <!-- 제비뽑기 화면 -->
+  <div class="container hidden" id="drawSection">
+    <h2>제비뽑기</h2>
+    <label>참여자 이름들 (쉼표 구분 최대 100명)</label>
+    <input type="text" id="drawParticipants" placeholder="예: 김철수,이영희,박민수" />
+    <label>뽑을 인원 수</label>
+    <input type="number" id="drawCount" min="1" max="100" value="1" />
+    <button id="drawBtn">뽑기 시작</button>
+    <div id="drawResult"></div>
+  </div>
+
+  <!-- 사다리 타기 화면 -->
+  <div class="container hidden" id="ladderSection">
+    <h2>사다리 타기</h2>
+    <label>참여자 이름들 (쉼표 구분 최대 100명)</label>
+    <input type="text" id="ladderParticipants" placeholder="예: 김철수,이영희,박민수" />
+    <label>벌칙 내용 (쉼표 구분, 참여자 수와 같아야 함)</label>
+    <input type="text" id="ladderPunishments" placeholder="예: 벌칙1,벌칙2,벌칙3" />
+    <button id="ladderStartBtn">사다리 타기 시작</button>
+    <div id="ladderResult"></div>
+  </div>
+
+  <!-- 주사위 굴리기 화면 -->
+  <div class="container hidden" id="diceSection">
+    <h2>주사위 굴리기</h2>
+    <button id="rollDiceBtn">주사위 굴리기</button>
+    <div id="diceResult"></div>
+  </div>
+
+  <button id="backBtn" class="hidden">뒤로가기</button>
+
+  <script src="minigame.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>퍼센트 계산기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/kmans1123/img/refs/heads/main/KakaoTalk_20250804_005639882.jpg" />
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #fff9f0;
+      text-align: center;
+      padding: 20px;
+    }
+    input {
+      padding: 10px;
+      margin: 10px;
+      width: 200px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: red;
+    }
+    .button {
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: #ffdede;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .back {
+      display: block;
+      margin-top: 20px;
+      color: #555;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>퍼센트 계산기</h2>
+  <input type="number" id="total" placeholder="전체값"><br>
+  <input type="number" id="percent" placeholder="비율값 (%)"><br>
+  <input type="number" id="partial" placeholder="일부값"><br>
+  <button class="button" onclick="calculatePercent()">계산하기</button>
+
+  <div class="result" id="percentResult"></div>
+  <a class="back" href="index.html">⬅ 메인으로 돌아가기</a>
+
+  <script src="percent.js"></script>
+</body>
+</html>

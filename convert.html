@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>단위 변환 계산기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/kmans1123/img/refs/heads/main/KakaoTalk_20250804_005639882.jpg" />
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0fff6;
+      text-align: center;
+      padding: 20px;
+    }
+    input {
+      padding: 10px;
+      margin: 10px;
+      width: 200px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: red;
+    }
+    .button {
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: #d1ffe0;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .back {
+      display: block;
+      margin-top: 20px;
+      color: #555;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>압력 단위 변환기 (mb ↔ psi)</h2>
+  <input type="number" id="mb" placeholder="밀리바 (mb)" oninput="convertFromMb()"><br>
+  <input type="number" id="psi" placeholder="psi" oninput="convertFromPsi()"><br>
+  <div class="result" id="convertResult"></div>
+  <a class="back" href="index.html">⬅ 메인으로 돌아가기</a>
+
+  <script src="convert.js"></script>
+</body>
+</html>

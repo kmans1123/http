@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>이름 정렬기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/kmans1123/img/refs/heads/main/KakaoTalk_20250804_005639882.jpg" />
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f5f9ff;
+      padding: 20px;
+    }
+    textarea {
+      width: 80%;
+      height: 200px;
+      margin-top: 10px;
+    }
+    .button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      border-radius: 20px;
+      background-color: #c3e6cb;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 20px;
+      color: red;
+      white-space: pre-wrap;
+    }
+    .back {
+      margin-top: 20px;
+      display: block;
+      color: #555;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>이름 가나다순 정렬기</h2>
+  <textarea id="nameList" placeholder="이름을 한 줄씩 입력하세요 (최대 100개)"></textarea><br>
+  <button class="button" onclick="sortNames()">정렬하기</button>
+
+  <div class="result" id="sortedResult"></div>
+  <a class="back" href="index.html">⬅ 메인으로 돌아가기</a>
+
+  <script src="sort.js"></script>
+</body>
+</html>

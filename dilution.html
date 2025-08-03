@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>희석비 계산기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/kmans1123/img/refs/heads/main/KakaoTalk_20250804_005639882.jpg" />
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 20px;
+    }
+    input {
+      padding: 10px;
+      margin: 10px;
+      width: 150px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: red;
+    }
+    .button {
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: #daf0ff;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .back {
+      display: block;
+      margin-top: 20px;
+      color: #555;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>희석비 계산기</h2>
+  <div>
+    <input type="number" id="ratioConcentrate" placeholder="원액 비율">
+    <input type="number" id="ratioWater" placeholder="물 비율">
+  </div>
+  <div>
+    <input type="number" id="volumeWater" placeholder="물 용량 (ml)" oninput="calcConcentrate()">
+    <input type="number" id="volumeConcentrate" placeholder="원액 용량 (ml)" oninput="calcWater()">
+  </div>
+
+  <div class="result" id="dilutionResult"></div>
+  <a class="back" href="index.html">⬅ 메인으로 돌아가기</a>
+
+  <script src="dilution.js"></script>
+</body>
+</html>
