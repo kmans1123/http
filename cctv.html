@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>지능형 CCTV — 객체 인식 + 차량 추적 + 번호판(ANPR) 모드</title>
+
+  <!-- TensorFlow COCO-SSD -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+  <!-- Tesseract.js (OCR) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
+
+  <style>
+    body { margin:0; text-align:center; background:#111; color:#eee; font-family:sans-serif; }
+    #stage { display:flex; gap:12px; align-items:flex-start; justify-content:center; padding:12px; }
+    #videoWrap { position:relative; }
+    video, canvas { max-width:100%; height:auto; border-radius:8px; background:#000; }
+    #controls { width:360px; background:#1b2430; padding:12px; border-radius:8px; text-align:left; }
+    #controls label{ display:block; margin:6px 0; font-size:14px; }
+    select,input,button{ width:100%; margin-top:6px; padding:6px; border-radius:6px; border:1px solid #233; background:#0e1620; color:#eee; }
+    .small { width:auto; display:inline-block; padding:6px 8px; margin-right:6px; }
+    #status { margin-top:6px; font-size:13px; color:#9fb; }
+    .plate { color:#ff9; font-weight:700; margin-left:8px; }
+  </style>
+</head>
+<body>
+  <h2>지능형 CCTV — 객체 인식 + 차량 추적 + 번호판 모드</h2>
+
+  <div id="stage">
+    <div id="videoWrap">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+    </div>
+
+    <div id="controls">
+      <label>Camera:
+        <select id="cameraSelect"></select>
+      </label>
+
+      <label>Confidence threshold:
+        <input id="threshold" type="number" value="0.5" step="0.05" min="0" max="1">
+      </label>
+
+      <label>FPS limit:
+        <input id="fpsLimit" type="number" value="15" step="1" min="1" max="30">
+      </label>
+
+      <label><input type="checkbox" id="showVehicleID" checked> Show Vehicle ID</label>
+
+      <label><input type="checkbox" id="plateMode"> Enable License-Plate Mode</label>
+
+      <button id="snapshotBtn">Capture Snapshot</button>
+
+      <div id="status">
+        FPS: <span id="fpsDisplay">0</span> |
+        Vehicles: <span id="vehicleCount">0</span>
+      </div>
+      <div id="plateLog" style="margin-top:8px;">
+        <strong>Detected Plates (per vehicle):</strong>
+        <ul id="plateList"></ul>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* --------------------
+   CentroidTracker (unchanged core)
+   -------------------- */
+class CentroidTracker {
+  constructor(maxDisappeared = 30, maxDistance = 100) {
+    this.nextObjectID = 0;
+    this.objects = new Map();
+    this.maxDisappeared = maxDisappeared;
+    this.maxDistance = maxDistance;
+  }
+  register(centroid, bbox) {
+    // add metadata fields for plate mode
+    this.objects.set(this.nextObjectID, { centroid, bbox, disappeared: 0, lastOcrTime:0, plateText: null });
+    this.nextObjectID++;
+  }
+  deregister(objectID) {
+    this.objects.delete(objectID);
+  }
+  update(rects) {
+    if (rects.length === 0) {
+      for (const [id, obj] of this.objects) {
+        obj.disappeared++;
+        if (obj.disappeared > this.maxDisappeared) this.deregister(id);
+      }
+      return this.objects;
+    }
+    const inputCentroids = rects.map(r => [r[0]+r[2]/2, r[1]+r[3]/2]);
+    if (this.objects.size === 0) {
+      rects.forEach((r, i) => this.register(inputCentroids[i], r));
+      return this.objects;
+    }
+    const objectIDs = Array.from(this.objects.keys());
+    const objectCentroids = Array.from(this.objects.values()).map(o => o.centroid);
+    const D = objectCentroids.map(oc => inputCentroids.map(ic => Math.hypot(oc[0]-ic[0], oc[1]-ic[1])));
+    const rows = D.map((row,i)=>({i,min:Math.min(...row)})).sort((a,b)=>a.min-b.min).map(r=>r.i);
+    const usedCols = new Set();
+    const usedRows = new Set();
+    for (const rIndex of rows){
+      const distances = D[rIndex];
+      let bestCol = -1, bestDist = Infinity;
+      for (let c=0;c<distances.length;c++){
+        if (usedCols.has(c)) continue;
+        if (distances[c] < bestDist){ bestDist = distances[c]; bestCol = c; }
+      }
+      if (bestCol === -1) continue;
+      if (bestDist > this.maxDistance) continue;
+      const objectID = objectIDs[rIndex];
+      const obj = this.objects.get(objectID);
+      obj.centroid = inputCentroids[bestCol];
+      obj.bbox = rects[bestCol];
+      obj.disappeared = 0;
+      usedCols.add(bestCol);
+      usedRows.add(rIndex);
+    }
+    rects.forEach((r,i)=>{ if(!usedCols.has(i)) this.register(inputCentroids[i], r); });
+    objectIDs.forEach((id, idx)=>{ if(!usedRows.has(idx)) { const obj=this.objects.get(id); obj.disappeared++; if(obj.disappeared>this.maxDisappeared) this.deregister(id); } });
+    return this.objects;
+  }
+}
+
+/* --------------------
+   DOM & state
+   -------------------- */
+const video = document.getElementById('video');
+const overlay = document.getElementById('overlay');
+const ctx = overlay.getContext('2d');
+const cameraSelect = document.getElementById('cameraSelect');
+const thresholdInput = document.getElementById('threshold');
+const fpsLimitInput = document.getElementById('fpsLimit');
+const showIDCheckbox = document.getElementById('showVehicleID');
+const plateModeCheckbox = document.getElementById('plateMode');
+const fpsDisplay = document.getElementById('fpsDisplay');
+const vehicleCountDisplay = document.getElementById('vehicleCount');
+const snapshotBtn = document.getElementById('snapshotBtn');
+const plateList = document.getElementById('plateList');
+
+let model;
+const tracker = new CentroidTracker(20, 120);
+let lastFrameTime = 0;
+let tesseractWorker = null; // will init when plate mode enabled
+let ocrBusy = false;
+
+/* --------------------
+   Camera enumeration + setup
+   -------------------- */
+async function enumerateCameras(){
+  try{
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cams = devices.filter(d=>d.kind==='videoinput');
+    cameraSelect.innerHTML = '';
+    cams.forEach((c,i)=>{ const opt=document.createElement('option'); opt.value=c.deviceId; opt.text=c.label||`Camera ${i+1}`; cameraSelect.appendChild(opt); });
+  }catch(e){ console.warn('enumerate devices failed', e); }
+}
+async function setupCamera(deviceId=null){
+  if(video.srcObject){ video.srcObject.getTracks().forEach(t=>t.stop()); }
+  const constraints = { video: deviceId ? { deviceId:{ exact: deviceId } } : { facingMode: "environment" }, audio:false };
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = stream;
+    await new Promise(r=>video.onloadedmetadata = r);
+    // update camera labels after permission
+    await enumerateCameras();
+  }catch(e){
+    console.error('camera setup failed', e);
+    alert('카메라 접근에 실패했습니다. HTTPS 환경인지, 권한을 허용했는지 확인하세요.');
+  }
+}
+cameraSelect.addEventListener('change', async ()=>{ await setupCamera(cameraSelect.value); });
+
+snapshotBtn.addEventListener('click', ()=>{
+  const link = document.createElement('a');
+  link.download = `snapshot_${Date.now()}.png`;
+  link.href = overlay.toDataURL('image/png');
+  link.click();
+});
+
+/* --------------------
+   Load model + Tesseract worker (on demand)
+   -------------------- */
+async function loadModels(){
+  model = await cocoSsd.load();
+  console.log('COCO-SSD loaded');
+}
+async function ensureTesseract(){
+  if(tesseractWorker) return;
+  // create worker (v2 API)
+  tesseractWorker = Tesseract.createWorker({
+    logger: m => { /* console.log(m) */ }
+  });
+  await tesseractWorker.load();
+  await tesseractWorker.loadLanguage('eng'); // 번호판이 영어/숫자면 eng; 지역에 따라 다른 언어 필요
+  await tesseractWorker.initialize('eng');
+  // configure whitelist to alnum + hyphen (optional)
+  await tesseractWorker.setParameters({
+    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'
+  });
+  console.log('Tesseract worker ready');
+}
+
+/* --------------------
+   OCR helper: crop a region from video into canvas and run OCR
+   - Heuristic: crop lower ~30% of car bbox as plate candidate
+   - Throttle: per vehicle once per second
+   -------------------- */
+function cropRegionToCanvas(sx, sy, sw, sh){
+  const c = document.createElement('canvas');
+  c.width = sw;
+  c.height = sh;
+  const g = c.getContext('2d');
+  g.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+  return c;
+}
+
+async function ocrPlateForObject(id, bbox){
+  // bbox = [x,y,w,h] in video pixel coords
+  const now = performance.now();
+  const obj = tracker.objects.get(id);
+  if(!obj) return;
+  if(now - obj.lastOcrTime < 1000) return; // 1s throttle per vehicle
+  // require sufficient size
+  if(bbox[2] < 80 || bbox[3] < 20) { obj.lastOcrTime = now; return; }
+
+  // crop lower portion of bbox (typical plate position)
+  const sx = Math.max(0, Math.round(bbox[0]));
+  const sw = Math.min(video.videoWidth - sx, Math.round(bbox[2]));
+  const sy = Math.max(0, Math.round(bbox[1] + bbox[3]*0.6)); // lower 40%
+  const sh = Math.min(video.videoHeight - sy, Math.max(16, Math.round(bbox[3]*0.35))); // ~35%
+  if (sw <= 0 || sh <= 0) { obj.lastOcrTime = now; return; }
+
+  const cropCanvas = cropRegionToCanvas(sx, sy, sw, sh);
+
+  // optionally: draw small debug box on overlay (brief flash)
+  ctx.strokeStyle = '#ff9';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(sx, sy, sw, sh);
+
+  obj.lastOcrTime = now;
+  if(!tesseractWorker) {
+    try { await ensureTesseract(); } catch(e){ console.warn('tesseract init failed', e); return; }
+  }
+  if(ocrBusy) return; // single OCR at a time (simple serialization)
+  ocrBusy = true;
+  try {
+    const { data: { text } } = await tesseractWorker.recognize(cropCanvas);
+    const clean = (text || '').replace(/[^A-Z0-9\-]/ig, '').trim();
+    if(clean.length >= 3){
+      obj.plateText = clean;
+      updatePlateList(); // update UI
+    }
+  } catch(e){
+    console.warn('OCR failed', e);
+  } finally {
+    ocrBusy = false;
+  }
+}
+
+/* --------------------
+   Draw & detection loop
+   -------------------- */
+function updatePlateList(){
+  plateList.innerHTML = '';
+  for(const [id, obj] of tracker.objects){
+    if(obj.plateText){
+      const li = document.createElement('li');
+      li.innerHTML = `ID ${id}: <span class="plate">${obj.plateText}</span>`;
+      plateList.appendChild(li);
+    }
+  }
+}
+
+async function detectFrame(timestamp){
+  requestAnimationFrame(detectFrame);
+
+  const fpsLimit = Number(fpsLimitInput.value) || 10;
+  if(timestamp - lastFrameTime < 1000/fpsLimit) return;
+  lastFrameTime = timestamp;
+
+  if(!model) return;
+  if(video.readyState < 2) return;
+
+  const predictions = await model.detect(video);
+  drawPredictions(predictions);
+}
+
+function drawPredictions(predictions){
+  overlay.width = video.videoWidth;
+  overlay.height = video.videoHeight;
+  ctx.clearRect(0,0,overlay.width, overlay.height);
+
+  const rects = [];
+  let vehicleCount = 0;
+
+  predictions.forEach(pred=>{
+    if(pred.score < Number(thresholdInput.value)) return;
+
+    // draw generic box + label
+    ctx.strokeStyle = '#00FFFF';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(...pred.bbox);
+
+    const label = `${pred.class} ${(pred.score*100).toFixed(0)}%`;
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    const textW = ctx.measureText(label).width + 8;
+    const textH = 18;
+    ctx.fillRect(pred.bbox[0], pred.bbox[1]-textH, textW, textH);
+    ctx.fillStyle = '#00FFFF';
+    ctx.fillText(label, pred.bbox[0]+4, pred.bbox[1]-4);
+
+    if(pred.class==='car' || pred.class==='truck' || pred.class==='bus'){
+      rects.push(pred.bbox);
+      vehicleCount++;
+    }
+  });
+
+  vehicleCountDisplay.textContent = vehicleCount;
+  const objects = tracker.update(rects);
+
+  for(const [id, obj] of objects){
+    const [x,y,w,h] = obj.bbox;
+    if(showIDCheckbox.checked){
+      ctx.strokeStyle = '#FFCC00';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x,y,w,h);
+      const idLabel = `Vehicle ID ${id}`;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      const textW = ctx.measureText(idLabel).width + 8;
+      const textH = 18;
+      ctx.fillRect(x, y-textH, textW, textH);
+      ctx.fillStyle = '#FFCC00';
+      ctx.fillText(idLabel, x+4, y-4);
+    }
+
+    // show plate text near box if available
+    if(obj.plateText){
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      const txt = `Plate: ${obj.plateText}`;
+      const wtxt = ctx.measureText(txt).width + 8;
+      const htxt = 18;
+      ctx.fillRect(x + 4, y + h + 4, wtxt, htxt);
+      ctx.fillStyle = '#ff9';
+      ctx.fillText(txt, x + 8, y + h + 18);
+    }
+
+    // perform OCR if plate mode enabled (but throttle inside ocrPlateForObject)
+    if(plateModeCheckbox.checked){
+      // kick off OCR asynchronously but don't block drawing
+      ocrPlateForObject(id, obj.bbox).catch(e=>console.warn(e));
+    }
+  }
+
+  // FPS estimation (rough)
+  const fps = (1000 / Math.max(1, (performance.now() - lastFrameTime))).toFixed(1);
+  fpsDisplay.textContent = fps;
+}
+
+/* --------------------
+   Init
+   -------------------- */
+async function init(){
+  await enumerateCameras();
+  await setupCamera();
+  await loadModels();
+  requestAnimationFrame(detectFrame);
+}
+init();
+
+/* --------------------
+   Cleanup on page unload
+   -------------------- */
+window.addEventListener('beforeunload', async ()=>{
+  if(tesseractWorker){ try{ await tesseractWorker.terminate(); } catch(e){} }
+  if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
+});
+</script>
+</body>
+</html>
