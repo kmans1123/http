@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>조작 룰렛</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #fafafa;
+    }
+
+    h1 { margin-bottom: 20px; }
+
+    .roulette-wrapper { position: relative; width: 330px; height: 330px; }
+
+    .roulette {
+      position: absolute;
+      width: 330px;
+      height: 330px;
+      border-radius: 50%;
+      border: 6px solid #444;
+      overflow: hidden;
+      background: white;
+      transition: transform 4s cubic-bezier(0.1,0.6,0.3,1);
+    }
+
+    .slice {
+      position: absolute;
+      width: 50%;
+      height: 100%;
+      top: 0;
+      left: 50%;
+      transform-origin: left center;
+    }
+    .white { transform: rotate(0deg); background: #ffffff; }
+    .black { transform: rotate(180deg); background: #000000; }
+
+    .pointer {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 28px solid red; 
+      z-index: 999;
+    }
+
+    .center-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 85px;
+      height: 85px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #c9c9c9, #9a9a9a);
+      border: 4px solid #555;
+      cursor: pointer;
+      z-index: 15;
+      transition: 0.25s;
+    }
+
+    .switch-on {
+      background: radial-gradient(circle, #ffffff, #bbbbbb) !important;
+      border-color: #777 !important;
+    }
+
+    #spinBtn {
+      margin-top: 20px;
+      padding: 14px 25px;
+      font-size: 18px;
+      background: #03a9f4;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    #spinBtn:hover { background: #0288d1; }
+
+    .indicator { margin-top: 18px; font-size: 22px; font-weight: bold; min-height: 28px; }
+  </style>
+</head>
+
+<body>
+<h1>룰렛 게임</h1>
+
+<div class="roulette-wrapper">
+  <div class="pointer"></div>
+  <div class="roulette" id="roulette">
+    <div class="slice white"></div>
+    <div class="slice black"></div>
+    <div class="center-btn" id="switch"></div>
+  </div>
+</div>
+
+<button id="spinBtn">돌리기</button>
+<div class="indicator" id="result">결과:</div>
+
+<script>
+const roulette = document.getElementById("roulette");
+const result = document.getElementById("result");
+const switchBtn = document.getElementById("switch");
+
+let forceWhite = false;
+
+switchBtn.addEventListener("click", () => {
+  forceWhite = !forceWhite;
+  switchBtn.classList.toggle("switch-on");
+});
+
+document.getElementById("spinBtn").addEventListener("click", () => {
+  // 이전 결과 초기화
+  result.textContent = "결과:";
+
+  // 1. 회전을 위해 transform 초기화
+  roulette.style.transition = "none";
+  roulette.style.transform = "rotate(0deg)";
+
+  // 2. 렌더링 강제 (브라우저가 transform 변경을 처리하게)
+  roulette.offsetHeight; // 읽어서 강제 reflow
+
+  // 3. 새로운 회전 각도 설정
+  roulette.style.transition = "transform 4s cubic-bezier(0.1,0.6,0.3,1)";
+
+  let deg;
+  if (forceWhite) {
+    deg = 360*5 + Math.random()*179;
+  } else {
+    deg = 360*5 + 180 + Math.random()*179;
+  }
+
+  roulette.style.transform = `rotate(${deg}deg)`;
+
+  // 4초 후 결과 표시
+  setTimeout(() => {
+    let finalDeg = deg % 360;
+    let isWhite = (finalDeg >= 180 && finalDeg < 360);
+    result.textContent = isWhite ? "결과: 흰색 🎉" : "결과: 검정 ⚫";
+  }, 4000);
+});
+</script>
+
+</body>
+</html>
