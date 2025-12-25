@@ -1,152 +1,215 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>조작 룰렛</title>
+<meta charset="UTF-8">
+<title>룰렛</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #fafafa;
-    }
+<style>
+:root{
+  --bg-url: url("https://mblogthumb-phinf.pstatic.net/20140226_114/oxonelectro_1393380653260citl5_JPEG/%B0%B6%B7%B0%BD%C3%B3%EB%C6%AE3%B9%E8%B0%E6%C8%AD%B8%E9%2C%B0%B6%B7%B0%BD%C3%B3%EB%C6%AE3%B9%D9%C5%C1%C8%AD%B8%E9%2C%BD%BA%B8%B6%C6%AE%C6%F9%B2%D9%B9%CC%B1%E2%2C%BD%BA%B8%B6%C6%AE%C6%F9%B9%E8%B0%E6%C8%AD%B8%E9%2C%BD%BA%B8%B6%C6%AE%C6%F9%B9%D9%C5%C1%C8%AD%B8%E9%2C%BD%BA%B8%B6%C6%AE%C6%F9%B4%DC%BB%F6%B9%E8%B0%E6%C8%AD%B8%E9%2C%C4%ED%B9%CC%B4%D9%2C%C4%ED%B9%CC%B4%D9%C4%C9%C0%CC%BD%BA%2C%BD%BA%B8%B6%C6%AE%C6%F9%B4%DC%BB%F6%2C%B4%DC%BB%F6%B9%E8.jpg?type=w420");
+}
 
-    h1 { margin-bottom: 20px; }
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  background: var(--bg-url) no-repeat center center fixed;
+  background-size:cover;
+}
 
-    .roulette-wrapper { position: relative; width: 330px; height: 330px; }
+h1{ margin-bottom:10px; color:#222; }
 
-    .roulette {
-      position: absolute;
-      width: 330px;
-      height: 330px;
-      border-radius: 50%;
-      border: 6px solid #444;
-      overflow: hidden;
-      background: white;
-      transition: transform 4s cubic-bezier(0.1,0.6,0.3,1);
-    }
+/* ===== 전체 ===== */
+.roulette-wrapper{
+  position:relative;
+  width:320px;
+  height:360px;
+}
 
-    .slice {
-      position: absolute;
-      width: 50%;
-      height: 100%;
-      top: 0;
-      left: 50%;
-      transform-origin: left center;
-    }
-    .white { transform: rotate(0deg); background: #ffffff; }
-    .black { transform: rotate(180deg); background: #000000; }
+/* ===== 포인터 (상단 고정, 방향만 회전) ===== */
+.pointer{
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%) rotate(90deg);
+  width:0;
+  height:0;
+  border-top:12px solid transparent;
+  border-bottom:12px solid transparent;
+  border-left:24px solid #222;
+  z-index:20;
+}
 
-    .pointer {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 10px solid transparent;
-      border-right: 10px solid transparent;
-      border-top: 28px solid red; 
-      z-index: 999;
-    }
+/* ===== 원판 ===== */
+.roulette{
+  position:absolute;
+  top:40px;
+  width:320px;
+  height:320px;
+  border-radius:50%;
+  background:
+    conic-gradient(
+      #f6b1b1 0deg 180deg,
+      #b9d6f2 180deg 360deg
+    );
+  border:2px solid #bbb;
+  box-shadow:0 6px 16px rgba(0,0,0,0.25);
+  transition:transform 4s cubic-bezier(0.1,0.6,0.3,1);
+  overflow:hidden;
+}
 
-    .center-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 85px;
-      height: 85px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #c9c9c9, #9a9a9a);
-      border: 4px solid #555;
-      cursor: pointer;
-      z-index: 15;
-      transition: 0.25s;
-    }
+/* ===== 반원 텍스트 ===== */
+.slice-text{
+  position:absolute;
+  top:50%;
+  width:50%;
+  transform:translateY(-50%);
+  font-size:22px;
+  font-weight:bold;
+  text-align:center;
+  color:#000;
+  outline:none;
+  cursor:text;
+}
 
-    .switch-on {
-      background: radial-gradient(circle, #ffffff, #bbbbbb) !important;
-      border-color: #777 !important;
-    }
+/* 안내 문구 느낌 */
+.slice-text.empty{
+  color:#777;
+  font-weight:normal;
+}
 
-    #spinBtn {
-      margin-top: 20px;
-      padding: 14px 25px;
-      font-size: 18px;
-      background: #03a9f4;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    #spinBtn:hover { background: #0288d1; }
+.slice-left{ left:0; }
+.slice-right{ right:0; }
 
-    .indicator { margin-top: 18px; font-size: 22px; font-weight: bold; min-height: 28px; }
-  </style>
+/* ===== 중앙 ===== */
+.center-cover{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#f5f5f5;
+  border:1px solid #ccc;
+  z-index:10;
+}
+
+.secret-switch{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:22px;
+  height:22px;
+  opacity:0;
+  cursor:pointer;
+  z-index:11;
+}
+
+/* ===== 버튼 ===== */
+#spinBtn{
+  margin-top:18px;
+  padding:14px 32px;
+  font-size:18px;
+  background:#03c75a;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+#spinBtn:hover{ background:#02b150; }
+
+#result{
+  margin-top:16px;
+  font-size:22px;
+  font-weight:bold;
+  min-height:28px;
+}
+</style>
 </head>
 
 <body>
-<h1>룰렛 게임</h1>
+
+<h1>룰렛</h1>
 
 <div class="roulette-wrapper">
   <div class="pointer"></div>
+
   <div class="roulette" id="roulette">
-    <div class="slice white"></div>
-    <div class="slice black"></div>
-    <div class="center-btn" id="switch"></div>
+    <div class="slice-text slice-left empty" contenteditable="true" data-placeholder="옵션 1">옵션 1</div>
+    <div class="slice-text slice-right empty" contenteditable="true" data-placeholder="옵션 2">옵션 2</div>
+
+    <div class="center-cover"></div>
+    <div class="secret-switch" id="secret"></div>
   </div>
 </div>
 
 <button id="spinBtn">돌리기</button>
-<div class="indicator" id="result">결과:</div>
+<div id="result">결과:</div>
 
 <script>
 const roulette = document.getElementById("roulette");
 const result = document.getElementById("result");
-const switchBtn = document.getElementById("switch");
+const secret = document.getElementById("secret");
+const texts = document.querySelectorAll(".slice-text");
 
-let forceWhite = false;
+let forceLeft = false;
 
-switchBtn.addEventListener("click", () => {
-  forceWhite = !forceWhite;
-  switchBtn.classList.toggle("switch-on");
+/* ===== placeholder 처리 ===== */
+texts.forEach(el=>{
+  el.addEventListener("focus",()=>{
+    if(el.classList.contains("empty")){
+      el.textContent="";
+      el.classList.remove("empty");
+    }
+  });
+
+  el.addEventListener("blur",()=>{
+    if(el.textContent.trim()===""){
+      el.textContent = el.dataset.placeholder;
+      el.classList.add("empty");
+    }
+  });
 });
 
-document.getElementById("spinBtn").addEventListener("click", () => {
-  // 이전 결과 초기화
-  result.textContent = "결과:";
+/* ===== 비밀 버튼 ===== */
+secret.addEventListener("click",()=>{
+  forceLeft = !forceLeft;
+});
 
-  // 1. 회전을 위해 transform 초기화
-  roulette.style.transition = "none";
-  roulette.style.transform = "rotate(0deg)";
+/* ===== 회전 ===== */
+document.getElementById("spinBtn").addEventListener("click",()=>{
+  result.textContent="결과:";
 
-  // 2. 렌더링 강제 (브라우저가 transform 변경을 처리하게)
-  roulette.offsetHeight; // 읽어서 강제 reflow
+  roulette.style.transition="none";
+  roulette.style.transform="rotate(0deg)";
+  roulette.offsetHeight;
 
-  // 3. 새로운 회전 각도 설정
-  roulette.style.transition = "transform 4s cubic-bezier(0.1,0.6,0.3,1)";
+  roulette.style.transition="transform 4s cubic-bezier(0.1,0.6,0.3,1)";
 
   let deg;
-  if (forceWhite) {
+  if(forceLeft){
     deg = 360*5 + Math.random()*179;
-  } else {
+  }else{
     deg = 360*5 + 180 + Math.random()*179;
   }
 
-  roulette.style.transform = `rotate(${deg}deg)`;
+  roulette.style.transform=`rotate(${deg}deg)`;
 
-  // 4초 후 결과 표시
-  setTimeout(() => {
-    let finalDeg = deg % 360;
-    let isWhite = (finalDeg >= 180 && finalDeg < 360);
-    result.textContent = isWhite ? "결과: 흰색 🎉" : "결과: 검정 ⚫";
-  }, 4000);
+  setTimeout(()=>{
+    let final = deg % 360;
+    let isLeft = final < 180;
+
+    const leftText = texts[0].classList.contains("empty") ? "" : texts[0].textContent;
+    const rightText = texts[1].classList.contains("empty") ? "" : texts[1].textContent;
+
+    result.textContent = "결과: " + (isLeft ? leftText : rightText);
+  },4000);
 });
 </script>
 
