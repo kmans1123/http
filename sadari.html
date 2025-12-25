@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>사다리 타기</title>
+
+<style>
+:root{
+  --bg-url: url("https://mblogthumb-phinf.pstatic.net/20140226_248/oxonelectro_1393380652982MvtoI_JPEG/%B0%B6%B7%B0%BD%C3%B3%EB%C6%AE3%B9%E8%B0%E6%C8%AD%B8%E9.jpg?type=w2");
+}
+
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  text-align:center;
+  background: var(--bg-url) no-repeat center center fixed;
+  background-size:cover;
+}
+
+#top-controls{
+  position:sticky;
+  top:0;
+  background:rgba(255,255,255,0.95);
+  padding:12px;
+  z-index:100;
+}
+
+#ladder-wrapper{
+  width:900px;
+  margin:90px auto 150px auto;
+}
+
+#ladder{
+  position:relative;
+  width:900px;
+  height:520px;
+  background:rgba(255,255,255,0.95);
+  border:2px solid #333;
+}
+
+.vertical{
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:3px;
+  background:#000;
+}
+
+.horizontal{
+  position:absolute;
+  height:3px;
+  background:#000;
+}
+
+.name-box{
+  position:absolute;
+  top:-70px;
+  transform:translateX(-50%);
+}
+.name-box input{ width:90px; }
+
+.result-box{
+  position:absolute;
+  bottom:-70px;
+  transform:translateX(-50%);
+}
+.result-box input{ width:100px; }
+
+.runner{
+  position:absolute;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  transform:translate(-7px,-7px);
+  z-index:10;
+}
+
+#legend{
+  margin-top:10px;
+}
+.legend-item{
+  display:inline-block;
+  margin:0 8px;
+}
+.legend-color{
+  display:inline-block;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  margin-right:4px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>사다리 타기</h1>
+
+<div id="top-controls">
+  인원수:
+  <input type="number" id="count" min="2" max="6">
+  <button onclick="build()">생성</button>
+  <button onclick="runAll()">전체 시작</button>
+  <button onclick="showResults()">결과 보기</button>
+</div>
+
+<div id="ladder-wrapper">
+  <div id="ladder"></div>
+  <div id="legend"></div>
+</div>
+
+<script>
+const ladder = document.getElementById("ladder");
+const legend = document.getElementById("legend");
+
+const WIDTH=900, HEIGHT=520;
+const colors=["red","blue","green","orange","purple","brown"];
+
+const fixedMappings={
+  2:[1,0],
+  3:[2,0,1],
+  4:[2,0,3,1],
+  5:[3,0,4,1,2],
+  6:[4,1,5,0,3,2]
+};
+
+let N, mapping, verticals=[], horizontals=[];
+let colX;
+
+/* ===== 생성 ===== */
+function build(){
+  ladder.innerHTML="";
+  legend.innerHTML="";
+  verticals=[];
+  horizontals=[];
+
+  N=parseInt(document.getElementById("count").value);
+  if(!fixedMappings[N]){ alert("2~6명만 가능"); return; }
+
+  mapping=fixedMappings[N];
+  colX=i=>WIDTH/(N+1)*(i+1);
+
+  for(let i=0;i<N;i++){
+    const x=colX(i);
+    const v=make("div","vertical",{left:x+"px"});
+    ladder.appendChild(v);
+    verticals.push(v);
+
+    const nb=make("div","name-box",{left:x+"px"});
+    nb.innerHTML=`<input placeholder="이름 ${i+1}">
+                  <button onclick="runOne(${i})">▶</button>`;
+    ladder.appendChild(nb);
+
+    const rb=make("div","result-box",{left:colX(i)+"px"});
+    rb.innerHTML=`<input placeholder="벌칙 ${i+1}">`;
+    ladder.appendChild(rb);
+
+    legend.innerHTML+=`<span class="legend-item">
+      <span class="legend-color" style="background:${colors[i]}"></span>객체 ${i+1}
+    </span>`;
+  }
+
+  generateGuaranteedLines();
+  generateFakeLines(N*2);
+  horizontals.sort((a,b)=>a.y-b.y);
+}
+
+/* ===== 결과 보장 가로줄 ===== */
+function generateGuaranteedLines(){
+  let cur=[...Array(N).keys()];
+  let yBase=80;
+
+  for(let t=0;t<N;t++){
+    let p=cur.indexOf(mapping[t]);
+    while(p>t){
+      addLine(p-1,p,yBase+=40);
+      [cur[p],cur[p-1]]=[cur[p-1],cur[p]];
+      p--;
+    }
+  }
+}
+
+/* ===== 연출용 가로줄 ===== */
+function generateFakeLines(count){
+  for(let i=0;i<count;i++){
+    const a=Math.floor(Math.random()*(N-1));
+    const y=80+Math.random()*(HEIGHT-160);
+    addLine(a,a+1,y,true);
+  }
+}
+
+function addLine(a,b,y,fake=false){
+  const line=make("div","horizontal",{
+    left:colX(a)+"px",
+    top:y+"px",
+    width:(colX(b)-colX(a))+"px"
+  });
+  ladder.appendChild(line);
+  horizontals.push({a,b,y,el:line,fake});
+}
+
+/* ===== 실행 ===== */
+function runOne(i){ run(i,colors[i]); }
+function runAll(){ for(let i=0;i<N;i++) runOne(i); }
+
+function run(start,color){
+  const dot = make("div","runner",{background:color});
+  ladder.appendChild(dot);
+
+  let x = start;
+  let idx = 0;
+
+  dot.style.left = colX(x) + "px";
+  dot.style.top = "0px";
+  verticals[x].style.background = color;
+
+  function step(){
+    if(idx >= horizontals.length){
+      dot.style.transition = "0.3s linear";
+      dot.style.top = HEIGHT + "px";
+      return;
+    }
+
+    const h = horizontals[idx];
+
+    // 세로 이동
+    move(dot, colX(x), h.y, () => {
+
+      // 가로줄이 연결된 경우
+      if(h.a === x || h.b === x){
+        h.el.style.background = color;
+        verticals[x].style.background = color;
+
+        x = (h.a === x) ? h.b : h.a;
+        verticals[x].style.background = color;
+
+        // 가로 이동
+        move(dot, colX(x), h.y, () => {
+          idx++;
+          step();
+        });
+
+      } else {
+        idx++;
+        step();
+      }
+    });
+  }
+
+  step();
+}
+
+/* ===== 결과 ===== */
+function showResults(){
+  const names=document.querySelectorAll(".name-box input");
+  const results=document.querySelectorAll(".result-box input");
+  let msg="📌 결과\n\n";
+  for(let i=0;i<N;i++){
+    msg+=`${names[i].value||"객체"+(i+1)} → ${results[mapping[i]].value||"벌칙"+(mapping[i]+1)}\n`;
+  }
+  alert(msg);
+}
+
+/* ===== 유틸 ===== */
+function make(tag,cls,style={}){
+  const e=document.createElement(tag);
+  e.className=cls;
+  Object.assign(e.style,style);
+  return e;
+}
+function move(el,x,y,cb){
+  el.style.transition="0.25s linear";
+  el.style.left=x+"px";
+  el.style.top=y+"px";
+  setTimeout(cb,250);
+}
+</script>
+
+</body>
+</html>
