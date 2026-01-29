@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Base64 변환기</title>
+
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #6366f1;
+      --border: #e5e7eb;
+    }
+
+    body.dark {
+      --bg: #0f172a;
+      --card: #020617;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #818cf8;
+      --border: #1e293b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .card {
+      background: var(--card);
+      width: 100%;
+      max-width: 640px;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    h1 { font-size: 1.4rem; margin: 0; }
+
+    .toggle {
+      cursor: pointer;
+      font-size: 1.2rem;
+      background: none;
+      border: none;
+      color: var(--text);
+    }
+
+    label { font-size: 0.85rem; color: var(--muted); }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      margin-top: 6px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    button.action {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--accent);
+      color: white;
+      transition: transform 0.1s, opacity 0.1s;
+    }
+
+    button.action.secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    button.copy {
+      background: var(--muted);
+      color: white;
+      margin-top: 6px;
+    }
+
+    button.action:active,
+    button.copy:active { transform: scale(0.97); }
+
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>🔐 Base64 변환기</h1>
+      <button class="toggle" onclick="toggleDark()">🌙</button>
+    </header>
+
+    <label>입력</label>
+    <textarea id="input" placeholder="텍스트 또는 Base64를 입력하세요"></textarea>
+
+    <div class="buttons">
+      <button class="action" onclick="encode()">인코딩</button>
+      <button class="action secondary" onclick="decode()">디코딩</button>
+    </div>
+
+    <label>결과</label>
+    <textarea id="output" placeholder="결과가 여기에 표시됩니다" readonly></textarea>
+    <button class="copy" onclick="copyResult()">📋 결과 복사</button>
+
+    <footer>
+      Base64 Encoder / Decoder · Mobile Friendly
+    </footer>
+  </div>
+
+  <script>
+    function encode() {
+      const input = document.getElementById("input").value;
+      try {
+        const encoded = btoa(unescape(encodeURIComponent(input)));
+        document.getElementById("output").value = encoded;
+      } catch {
+        alert("인코딩 실패");
+      }
+    }
+
+    function decode() {
+      const input = document.getElementById("input").value;
+      try {
+        const decoded = decodeURIComponent(escape(atob(input)));
+        document.getElementById("output").value = decoded;
+      } catch {
+        alert("유효한 Base64 문자열이 아닙니다.");
+      }
+    }
+
+    function toggleDark() {
+      document.body.classList.toggle("dark");
+      const icon = document.querySelector(".toggle");
+      icon.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+    }
+
+    function copyResult() {
+      const output = document.getElementById("output");
+      output.select();
+      output.setSelectionRange(0, 99999); // 모바일 호환
+      document.execCommand("copy");
+      alert("결과가 복사되었습니다!");
+    }
+  </script>
+</body>
+</html>
