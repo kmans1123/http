@@ -30,21 +30,21 @@ h1{ margin-bottom:10px; color:#222; }
   height:360px;
 }
 
-/* ===== 포인터 (정확히 12시 방향을 가리키도록 수정) ===== */
+/* ===== 포인터 (상단 고정, 방향만 회전) ===== */
 .pointer{
   position:absolute;
-  top:22px; /* 원판 닿기 직전 위치로 조정 */
+  top:0;
   left:50%;
-  transform:translateX(-50%);
+  transform:translateX(-50%) rotate(90deg);
   width:0;
   height:0;
-  border-left:12px solid transparent;
-  border-right:12px solid transparent;
-  border-top:24px solid #222; /* 아래를 가리키는 삼각형 */
+  border-top:12px solid transparent;
+  border-bottom:12px solid transparent;
+  border-left:24px solid #222;
   z-index:20;
 }
 
-/* ===== 원판 (정확한 5등분: 1칸당 72도) ===== */
+/* ===== 원판 ===== */
 .roulette{
   position:absolute;
   top:40px;
@@ -53,11 +53,8 @@ h1{ margin-bottom:10px; color:#222; }
   border-radius:50%;
   background:
     conic-gradient(
-      #f6b1b1 0deg 72deg,    /* [0] 2박 3일 */
-      #b9d6f2 72deg 144deg,  /* [1] 3박 4일 */
-      #ffe17d 144deg 216deg, /* [2] 4박 5일 (★목표 칸) */
-      #b8f2b9 216deg 288deg, /* [3] 5박 6일 */
-      #d1b8f2 288deg 360deg  /* [4] 무박 7일 */
+      #f6b1b1 0deg 180deg,
+      #b9d6f2 180deg 360deg
     );
   border:2px solid #bbb;
   box-shadow:0 6px 16px rgba(0,0,0,0.25);
@@ -65,29 +62,28 @@ h1{ margin-bottom:10px; color:#222; }
   overflow:hidden;
 }
 
-/* ===== 5등분 텍스트 정중앙 배치 교정 ===== */
+/* ===== 반원 텍스트 ===== */
 .slice-text{
   position:absolute;
-  top:0;
-  left:50%;
-  width:80px;         /* 글자 박스 너비를 줄여서 삐져나가지 않게 제한 */
-  height:160px;       /* 반지름만큼 꽉 채움 */
-  margin-left:-40px;  /* 가로 정중앙 정렬 */
-  transform-origin: bottom center; /* 회전 중심을 원판의 정중앙(아래쪽 변)으로 고정 */
-  font-size:16px;
+  top:50%;
+  width:50%;
+  transform:translateY(-50%);
+  font-size:22px;
   font-weight:bold;
-  color:#000;
   text-align:center;
-  padding-top:30px;   /* 글씨가 원판 외각 안쪽에 예쁘게 걸치도록 패딩 부여 */
-  box-sizing: border-box;
+  color:#000;
+  outline:none;
+  cursor:text;
 }
 
-/* 각 칸의 딱 한가운데(각 영역 시작각 + 36도)에 글씨 배치 */
-.opt-1 { transform: rotate(36deg); }  /* 2박 3일 (0~72도 중앙) */
-.opt-2 { transform: rotate(108deg); } /* 3박 4일 (72~144도 중앙) */
-.opt-3 { transform: rotate(180deg); } /* 4박 5일 (144~216도 중앙) */
-.opt-4 { transform: rotate(252deg); } /* 5박 6일 (216~288도 중앙) */
-.opt-5 { transform: rotate(324deg); } /* 무박 7일 (288~360도 중앙) */
+/* 안내 문구 느낌 */
+.slice-text.empty{
+  color:#777;
+  font-weight:normal;
+}
+
+.slice-left{ left:0; }
+.slice-right{ right:0; }
 
 /* ===== 중앙 ===== */
 .center-cover{
@@ -139,21 +135,14 @@ h1{ margin-bottom:10px; color:#222; }
 
 <body>
 
-<h1 style="text-align: center; font-size: 24px; line-height: 1.4; margin-bottom: 20px;">
-  마한진한변한에서 진한을 담당하고 있는<br>
-  진한이 자꾸 헛소리 못하게 하기 위한<br>
-  제주도 일정 룰렛
-</h1>
+<h1>모기 룰렛</h1>
 
 <div class="roulette-wrapper">
   <div class="pointer"></div>
 
   <div class="roulette" id="roulette">
-    <div class="slice-text opt-1">2박 3일</div>
-    <div class="slice-text opt-2">3박 4일</div>
-    <div class="slice-text opt-3">4박 5일</div>
-    <div class="slice-text opt-4">5박 6일</div>
-    <div class="slice-text opt-5">무박 7일</div>
+    <div class="slice-text slice-left empty" contenteditable="true" data-placeholder="옵션 1">옵션 1</div>
+    <div class="slice-text slice-right empty" contenteditable="true" data-placeholder="옵션 2">옵션 2</div>
 
     <div class="center-cover"></div>
     <div class="secret-switch" id="secret"></div>
@@ -167,44 +156,60 @@ h1{ margin-bottom:10px; color:#222; }
 const roulette = document.getElementById("roulette");
 const result = document.getElementById("result");
 const secret = document.getElementById("secret");
+const texts = document.querySelectorAll(".slice-text");
 
-/* ===== 회전 로직 (물리적 시계방향 회전 완벽 계산) ===== */
+let forceLeft = false;
+
+/* ===== placeholder 처리 ===== */
+texts.forEach(el=>{
+  el.addEventListener("focus",()=>{
+    if(el.classList.contains("empty")){
+      el.textContent="";
+      el.classList.remove("empty");
+    }
+  });
+
+  el.addEventListener("blur",()=>{
+    if(el.textContent.trim()===""){
+      el.textContent = el.dataset.placeholder;
+      el.classList.add("empty");
+    }
+  });
+});
+
+/* ===== 비밀 버튼 ===== */
+secret.addEventListener("click",()=>{
+  forceLeft = !forceLeft;
+});
+
+/* ===== 회전 ===== */
 document.getElementById("spinBtn").addEventListener("click",()=>{
   result.textContent="결과:";
 
   roulette.style.transition="none";
   roulette.style.transform="rotate(0deg)";
-  roulette.offsetHeight; // 리플로우
+  roulette.offsetHeight;
 
   roulette.style.transition="transform 4s cubic-bezier(0.1,0.6,0.3,1)";
 
-  // 기본 5바퀴 회전 (360 * 5 = 1800도)
-  const baseRotations = 1800; 
-  
-  /* [4박 5일 물리적 안착 공식 공식]
-    - '4박 5일' 칸은 원판이 0도일 때 [144도 ~ 216도]에 있습니다.
-    - 원판이 시계 방향으로 회전할 때 이 칸이 12시 포인터에 닿으려면 
-      원판을 역으로 [360 - 216]도 ~ [360 - 144]도 만큼 돌려야 합니다.
-    - 즉, 최종 회전 각도가 [144도 ~ 216도] 가 추가되는 것이 완벽하게 맞습니다!
-    - 경계선에 걸치지 않고 노란색 칸 내부에서 완전히 무작위로 멈추게 조절합니다.
-  */
-  const minAngle = 144 + 8;  // 152도 (안전 마진 적용)
-  const maxAngle = 216 - 8;  // 208도
-  const randomInsideSector = minAngle + Math.random() * (maxAngle - minAngle);
-  
-  const deg = baseRotations + randomInsideSector;
+  let deg;
+  if(forceLeft){
+    deg = 360*5 + Math.random()*179;
+  }else{
+    deg = 360*5 + 180 + Math.random()*179;
+  }
 
   roulette.style.transform=`rotate(${deg}deg)`;
 
   setTimeout(()=>{
-    // 이제 포인터 눈금과 텍스트 결과가 정확하게 노란색 '4박 5일' 칸을 가리킵니다.
-    result.textContent = "결과: 4박 5일";
-  }, 4000);
-});
+    let final = deg % 360;
+    let isLeft = final < 180;
 
-/* ===== 비밀 스위치 로그용 ===== */
-secret.addEventListener("click",()=>{
-  console.log("주작 세팅 이상 무");
+    const leftText = texts[0].classList.contains("empty") ? "" : texts[0].textContent;
+    const rightText = texts[1].classList.contains("empty") ? "" : texts[1].textContent;
+
+    result.textContent = "결과: " + (isLeft ? leftText : rightText);
+  },4000);
 });
 </script>
 
